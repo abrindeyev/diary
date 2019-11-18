@@ -1,0 +1,197 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="ios-only">Back</span>
+          </a>
+        </div>
+        <div class="title">New behavioral entry</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block-title">Choose kid</div>
+      <div class="list">
+        <ul>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="kid" value="Fyodor" checked="checked"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">Fyodor</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="kid" value="Alyona"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">Alyona</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="kid" value="both"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">Alyona &amp; Fyodor</div>
+              </div>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="block-title">Choose points</div>
+      <div class="list">
+        <ul>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="-5"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">-5</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="-2"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">-2</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="-1" checked="checked"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">-1</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="1"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">1</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="2"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">2</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="5"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">5</div>
+              </div>
+            </label>
+          </li>
+          <li>
+            <label class="item-radio item-content">
+              <input type="radio" name="points" value="10"/>
+              <i class="icon icon-radio"></i>
+              <div class="item-inner">
+                <div class="item-title">10</div>
+              </div>
+            </label>
+          </li>
+        </ul>
+      </div>
+      <div class="list no-hairlines-md">
+        <ul>
+          <li>
+            <div class="item-content item-input">
+              <div class="item-inner">
+                <div class="item-title item-label">Reason</div>
+                <div class="item-input-wrap">
+                  <input type="text" name="reason" placeholder="Enter reason here"/>
+                </div>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div class="block block-strong">
+        <p class="row">
+          <a href="#" class="col button button-large button-fill button-raised" @click="SubmitBVEntry">Submit</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  export default {
+    data: function() {
+      var self = this;
+      return {};
+    },
+    methods: {
+      SubmitBVEntry: function() {
+        var self = this;
+        self.$app.preloader.show();
+        var $$ = self.$dom7;
+        var kid = $$('input[name="kid"]:checked')[0].value;
+        var points = $$('input[name="points"]:checked')[0].value;
+        var reason = $$('input[name="reason"]')[0].value;
+        if (reason === "") {
+          self.$app.preloader.hide();
+          self.$app.dialog.alert("The reason is a mandatory field");
+          return {};
+        }
+        var dt = new Date();
+        if (kid === "both") {
+          var entries = [
+             {
+               owner_id: self.$app.data.stitchUserId,
+               ts: dt,
+               score: Number(points),
+               child: "Alyona",
+               comment: reason
+             },
+             {
+               owner_id: self.$app.data.stitchUserId,
+               ts: dt,
+               score: Number(points),
+               child: "Fyodor",
+               comment: reason
+             }
+            ];
+        }
+        else {
+          var entries = [
+             {
+               owner_id: self.$app.data.stitchUserId,
+               ts: dt,
+               score: Number(points),
+               child: kid,
+               comment: reason
+             }
+            ];
+        }
+        self.$app.data.db.collection('bv_log').insertMany(entries).then(res => {
+        self.$app.preloader.hide();
+        self.$app.dialog.alert("Updated successfully");
+        $$('input[name="reason"]')[0].value = "";
+        }).catch(e => {
+          self.$app.preloader.hide();
+          self.$app.dialog.alert("Failed to update: "+e);
+        });
+      },
+    },
+  }
+</script>

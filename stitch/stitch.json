@@ -1,0 +1,9 @@
+{
+    "config_version": 20180301,
+    "security": {
+        "allowed_request_origins": [
+            "https://diary.bkman.rocks",
+            "https://diary-staging.bkman.rocks"
+        ]
+    }
+}

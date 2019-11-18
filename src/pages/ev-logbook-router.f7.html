@@ -1,0 +1,29 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="back link">
+            <i class="icon icon-back"></i>
+            <span class="ios-only">Back</span>
+          </a>
+        </div>
+        <div class="title">EV Logbook Router</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block block-strong">
+        {{#each EVPlaces}}
+        <p class="row">
+          <a href="/ev-logbook-entry/id/{{_id}}/spots/{{max_spots}}/name/{{name}}/" class="col button button-large button-raised button-fill">{{name}}</a>
+        </p>
+        {{else}}
+	<p>No EV places around {{lat}}, {{lon}}</p>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+export default {};
+</script>

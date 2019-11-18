@@ -1,0 +1,73 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="ios-only">Back</span>
+          </a>
+        </div>
+	<div class="title">How many <b>free</b> spots you see?</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="block block-strong">
+        <p>EV place: <b>{{name}}</b></p>
+      </div>
+      <div class="block block-strong">
+        {{#each sequence}}
+        <p class="row">
+          <a href="#" class="col button button-large button-raised button-fill" @click="UpdateEVPlace({{this}})">{{this}}</a>
+        </p>
+        {{else}}
+	      <p>No spots for {{Name}}</p>
+        {{/each}}
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  export default {
+    data: function() {
+      var self = this;
+      console.log("self in data function:");
+      console.log(self);
+      var dao = {};
+      if (self.Id) {
+        dao['Id'] = self.Id;
+        dao['Name'] = self.Name;
+        dao['MaxSpots'] = self.MaxSpots;
+      } else {
+        dao['Id'] = self.$route.params.Id;
+        dao['Name'] = self.$route.params.Name;
+        dao['MaxSpots'] = self.$route.params.MaxSpots;
+      }
+      return {
+        sequence: [...Array(Number(dao.MaxSpots)+1).keys()],
+        id: dao.Id,
+        name: dao.Name,
+      };
+    },
+    methods: {
+      UpdateEVPlace: function (n) {
+        var self = this;
+        console.log("UpdateEVPlace()");
+        self.$app.preloader.show();
+        //console.log(self.id);
+        //console.log(new stitch.BSON.ObjectId(self.id));
+        var dt = new Date();
+        self.$app.data.db.collection('ev_logbook').insertOne({owner_id: self.$app.data.stitchUserId, place_id: new stitch.BSON.ObjectId(self.id), free: n, ts: dt}).then(res => {
+        self.$app.data.db.collection('ev_places').updateOne({_id: new stitch.BSON.ObjectId(self.id)}, {'$set':{'last_updated_on':dt}}).then(res => {
+        self.$app.preloader.hide();
+        // self.$app.dialog.alert("Updated successfully");
+        // console.log(self.$f7router);
+        self.$f7router.back();
+        })}).catch(e => {
+          self.$app.preloader.hide();
+          self.$app.dialog.alert("Failed to update EV Place: "+e);
+        });
+      },
+    },
+  }
+</script>
