@@ -1,6 +1,9 @@
-name: CI
+name: Production
 
-on: [push]
+on:
+  push:
+    branches:
+    - master
 
 jobs:
   build:
@@ -9,9 +12,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
-    - name: Run a one-line script
-      run: echo Hello, world!
-    - name: Run a multi-line script
+    - name: build
+      env:
+        STITCH_APP_ID: ${{ secrets.PROD_STITCH_APP_ID }}
       run: |
-        echo Add other actions to build,
-        echo test, and deploy your project.
+        npm install
+        sed -i "s/GITHUB_STITCH_APP_ID/$STITCH_APP_ID/" src/js/app.js
+        mkdir -p stitch/hosting/files
+        npm run build-prod
+        echo "<!-- $(date) -->" >> stitch/hosting/files/index.html
+    - name: Deploy to Production
+      env:
+        STITCH_APP_ID: ${{ secrets.PROD_STITCH_APP_ID }}
+        STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
+        STITCH_USER: ${{ secrets.STITCH_USER }}
+      run: |
+        stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
+        stitch-cli import --strategy=merge --include-hosting --reset-cdn-cache --yes
