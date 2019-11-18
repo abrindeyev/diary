@@ -1,4 +1,5 @@
 {
+    "id": "5d56322db43cf7ff64580e3f",
     "database": "diary",
     "collection": "log_entries",
     "roles": [

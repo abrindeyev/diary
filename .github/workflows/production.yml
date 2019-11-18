@@ -28,4 +28,4 @@ jobs:
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
         node_modules/.bin/stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
-        node_modules/.bin/stitch-cli import --strategy=merge --include-hosting --reset-cdn-cache --yes
+        cd stitch && node_modules/.bin/stitch-cli import --strategy=merge --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
