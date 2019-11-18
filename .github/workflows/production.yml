@@ -27,5 +27,6 @@ jobs:
         STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
+        npm install -g mongodb-stitch-cli
         stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
         stitch-cli import --strategy=merge --include-hosting --reset-cdn-cache --yes
