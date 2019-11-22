@@ -1,6 +1,5 @@
 {
-    "id": "5d58ac405a44d1f6630dc4ec",
-    "database": "diary",
+    "database": "",
     "collection": "ev_places",
     "roles": [
         {

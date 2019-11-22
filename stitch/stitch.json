@@ -1,19 +1,14 @@
 {
-    "app_id": "compliancediary-lkwqi",
+    "app_id": "",
     "config_version": 20180301,
-    "name": "ComplianceDiary",
+    "name": "",
     "location": "US-OR",
     "deployment_model": "GLOBAL",
-    "security": {
-        "allowed_request_origins": [
-            "https://diary.bkman.rocks",
-            "https://diary-staging.bkman.rocks"
-        ]
-    },
+    "security": {},
     "hosting": {
         "enabled": true,
-        "custom_domain": "bkman.rocks",
-        "app_default_domain": "compliancediary-lkwqi.mongodbstitch.com",
+        "custom_domain": "",
+        "app_default_domain": "",
         "default_error_path": "",
         "default_error_code": "404"
     }

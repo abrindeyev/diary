@@ -1,12 +1,11 @@
 {
-    "id": "5c6a00483e1e1e27a8cf35a1",
     "name": "oauth2-google",
     "type": "oauth2-google",
     "config": {
         "clientId": "238095324198-q1vvoh5nrcortevgt7k90gbmd8gqmop4.apps.googleusercontent.com"
     },
     "secret_config": {
-        "clientSecret": "__oauth2-google_clientSecret"
+        "clientSecret": ""
     },
     "disabled": false,
     "metadata_fields": [
@@ -23,8 +22,5 @@
             "name": "email"
         }
     ],
-    "redirect_uris": [
-        "https://diary.bkman.rocks/",
-        "http://localhost:8080/"
-    ]
+    "redirect_uris": []
 }

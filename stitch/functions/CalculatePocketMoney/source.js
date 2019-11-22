@@ -1,5 +1,5 @@
 exports = function(){
-  var bvLog = context.services.get("mongodb-atlas").db("diary").collection("bv_log");
+  var bvLog = context.services.get("mongodb-atlas").db("GITHUB_MONGO_DATABASE_NAME").collection("bv_log");
   var dt = new Date();
   var month = dt.getMonth();
   var year = dt.getFullYear();

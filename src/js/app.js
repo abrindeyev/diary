@@ -20,7 +20,7 @@ import {
   GoogleRedirectCredential
 } from 'mongodb-stitch-browser-sdk'
 const APP_ID = 'GITHUB_STITCH_APP_ID';
-const MONGO_DATABASE = 'diary';
+const MONGO_DATABASE = 'GITHUB_MONGO_DATABASE_NAME';
 const EV_PLACES  = 'ev_places';
 const EV_LOGBOOK = 'ev_logbook';
 

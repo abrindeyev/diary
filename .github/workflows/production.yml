@@ -4,6 +4,7 @@ on:
   push:
     branches:
     - master
+    - uat
 
 jobs:
   build:
@@ -14,18 +15,18 @@ jobs:
     - uses: actions/checkout@v1
     - name: build
       env:
-        STITCH_APP_ID: ${{ secrets.PROD_STITCH_APP_ID }}
+        MASTER_ENV: ${{ secrets.MASTER_ENV }}
+        UAT_ENV: ${{ secrets.UAT_ENV }}
       run: |
         npm install
-        sed -i "s/GITHUB_STITCH_APP_ID/$STITCH_APP_ID/" src/js/app.js
+        ./customize_configs.sh
         mkdir -p stitch/hosting/files
         npm run build-prod
         echo "<!-- $(date) -->" >> stitch/hosting/files/index.html
-    - name: Deploy to Production
+    - name: Deploy
       env:
-        STITCH_APP_ID: ${{ secrets.PROD_STITCH_APP_ID }}
         STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
         node_modules/.bin/stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
-        cd stitch && ../node_modules/.bin/stitch-cli import --strategy=merge --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
+        cd stitch && ../node_modules/.bin/stitch-cli import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
