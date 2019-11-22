@@ -3,6 +3,8 @@
 branch="${GITHUB_REF#refs/heads/}"
 prefix="${branch^^}" # uppercase
 
+echo "Configs will be customized for the $branch branch"
+
 function kv() {
   local source="${prefix}_ENV"
   if [[ $source ]]; then
@@ -41,3 +43,5 @@ change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allow
 
 # Google OAuth secret name adjustment
 change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .redirect_uris='$(kv allowedRequestOrigins) stitch/auth_providers/oauth2-google.json
+
+echo "Config customization completed"
