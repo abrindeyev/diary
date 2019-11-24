@@ -2,7 +2,7 @@
     "name": "oauth2-google",
     "type": "oauth2-google",
     "config": {
-        "clientId": "238095324198-q1vvoh5nrcortevgt7k90gbmd8gqmop4.apps.googleusercontent.com"
+        "clientId": ""
     },
     "secret_config": {
         "clientSecret": ""
