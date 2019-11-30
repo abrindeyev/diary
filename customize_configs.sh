@@ -42,6 +42,6 @@ done
 change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.custom_domain="'$(kv customDomain)'" | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
 
 # Google OAuth secret name adjustment
-change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .redirect_uris='$(kv OAuthRedirectURIs) stitch/auth_providers/oauth2-google.json
+change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .config.clientId="'$(kv googleOauthStitchUsername)'" | .redirect_uris='$(kv OAuthRedirectURIs) stitch/auth_providers/oauth2-google.json
 
 echo "Config customization completed"

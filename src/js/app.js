@@ -60,8 +60,8 @@ else {
 var app = new Framework7({
   root: '#app', // App root element
 
-  name: 'Compliance Diary', // App name
-  theme: 'auto', // Automatic theme detection
+  name: 'Diary', // App name
+  theme: 'ios', // Automatic theme detection
   // App root data
   data: function () {
     return {
