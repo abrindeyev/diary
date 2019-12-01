@@ -62,3 +62,4 @@ typings/
 
 # Stitch static hosting generated content
 stitch/hosting/files/**
+local/
