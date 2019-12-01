@@ -13,6 +13,7 @@ function resolvePath(dir) {
   return path.join(__dirname, '..', dir);
 }
 
+const fs = require('fs');
 const env = process.env.NODE_ENV || 'development';
 const target = process.env.TARGET || 'web';
 
@@ -43,6 +44,12 @@ module.exports = {
     compress: true,
     contentBase: '/stitch/hosting/files/',
     disableHostCheck: true,
+    https: {
+      key: fs.readFileSync('local/key.pem'),
+      cert: fs.readFileSync('local/localhost.pem'),
+      ca: fs.readFileSync('local/ca.pem'),
+    },
+    port: 8443,
     watchOptions: {
       poll: true,
     },
