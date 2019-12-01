@@ -23,13 +23,10 @@ function change_json_file() {
   fi
 }
 
-myDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && cd .. && pwd )"
-export PATH="$PATH:$myDir/node_modules/.bin"
-
 appId="$(kv appId)"
 appName="$(kv appName)"
 dbName="$(kv mongoDatabase)"
-cli="$myDir/node_modules/.bin/stitch-cli"
+cli="$(pwd)/node_modules/.bin/stitch-cli"
 
 echo "Getting MongoDB Stitch CLI"
 if [[ -f "$cli" ]]; then
