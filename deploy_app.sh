@@ -29,23 +29,24 @@ export PATH="$PATH:$myDir/node_modules/.bin"
 appId="$(kv appId)"
 appName="$(kv appName)"
 dbName="$(kv mongoDatabase)"
+cli="$myDir/node_modules/.bin/stitch-cli"
 
 echo "Getting MongoDB Stitch CLI"
-if which stitch-cli; then
-  echo "^ stitch-cli was discovered"
+if [[ -f "$cli" ]]; then
+  echo "The stitch-cli: $cli"
 else
   echo "Failed to get path to stitch-cli, aborting!"
   exit 1
 fi
 
 echo "Logging in to MongoDB Stitch"
-stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
+"$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
 
 # Step 1: replace the existing app
-cd stitch && stitch-cli import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
+cd stitch && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
 
 # Step 2: export the app to get newly generated IDs for the services
-cd .. && stitch-cli export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
+cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
 
 # Step 3: enable custom user data
 cd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
@@ -54,6 +55,6 @@ change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_conf
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
-stitch-cli import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes
+"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes
 
 echo "Deployment completed"
