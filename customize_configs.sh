@@ -16,7 +16,7 @@ function kv() {
   local source="${prefix}_ENV"
   local file_source="./local/${source}.json"
 
-  if [[ $source ]]; then
+  if [[ "${!source}" != "" ]]; then
     echo "${!source}" | jq -rc "$query"
   elif [[ -r "$file_source" ]]; then
     jq -rc "$query" "$file_source"

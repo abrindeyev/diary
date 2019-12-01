@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-branch="${GITHUB_REF#refs/heads/}"
+if [[ -z $GITHUB_REF ]]; then
+  branch="$(git rev-parse --abbrev-ref HEAD)"
+else
+  branch="${GITHUB_REF#refs/heads/}"
+fi
 prefix="${branch^^}" # uppercase
 
 function kv() {
