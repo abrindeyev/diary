@@ -48,7 +48,7 @@ cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from 
 # Step 3: enable custom user data
 cd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
 atlasClusterId="$(jq -r '.id' services/mongodb-atlas/config.json)"
-change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_config.mongo_service_id="'$atlasClusterId'" | .custom_user_data_config.database_name="'$(kv dbName)'" | .custom_user_data_config.collection_name="bv_users_metadata" | .custom_user_data_config.user_id_field="owner_id"' ./stitch.json
+change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_config.mongo_service_id="'$atlasClusterId'" | .custom_user_data_config.database_name="'$dbName'" | .custom_user_data_config.collection_name="bv_users_metadata" | .custom_user_data_config.user_id_field="owner_id"' ./stitch.json
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
