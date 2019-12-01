@@ -27,6 +27,7 @@ function change_json_file() {
 
 dbName="$(kv mongoDatabase)"
 appId="$(kv appId)"
+customDomainEnabled="$(kv customDomainEnabled)"
 
 sed -i "s/GITHUB_STITCH_APP_ID/$appId/" src/js/app.js
 
@@ -39,7 +40,11 @@ for file in $(find stitch/services/mongodb-atlas/rules -type f -name \*.json); d
   change_json_file '.database="'$dbName'"' "$file"
 done
 
-change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.custom_domain="'$(kv customDomain)'" | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
+change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
+
+if [[ $customDomainEnabled == "true" ]]; then
+  change_json_file '.hosting.custom_domain="'$(kv customDomain)'"' ./stitch/stitch.json
+fi
 
 # Google OAuth secret name adjustment
 change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .config.clientId="'$(kv googleOauthStitchUsername)'" | .redirect_uris='$(kv OAuthRedirectURIs) stitch/auth_providers/oauth2-google.json

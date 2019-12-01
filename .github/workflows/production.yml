@@ -25,8 +25,9 @@ jobs:
         echo "<!-- $(date) -->" >> stitch/hosting/files/index.html
     - name: Deploy
       env:
+        MASTER_ENV: ${{ secrets.MASTER_ENV }}
+        UAT_ENV: ${{ secrets.UAT_ENV }}
         STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
-        node_modules/.bin/stitch-cli login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
-        cd stitch && ../node_modules/.bin/stitch-cli import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
+        ./deploy.sh
