@@ -6,7 +6,7 @@
     "deployment_model": "GLOBAL",
     "security": {},
     "hosting": {
-        "enabled": false,
+        "enabled": true,
         "app_default_domain": "",
         "default_error_path": "",
         "default_error_code": "404"
