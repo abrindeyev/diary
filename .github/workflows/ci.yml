@@ -30,4 +30,4 @@ jobs:
         STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
-        ./deploy.sh
+        ./deploy_app.sh
