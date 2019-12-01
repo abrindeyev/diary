@@ -67,7 +67,9 @@ echo "Logging in to MongoDB Stitch"
 cd stitch && "$cli" import --strategy=replace --app-id="$appId" --yes
 
 # Step 2: export the app to get newly generated IDs for the services
-cd ../local && "$cli" export --app-id=$appId || { echo "Export from MongoDB Stitch failed"; exit 1; }
+cd ../local
+[[ -d "${appName?}" ]] && rm -fr "${appName?}"
+"$cli" export --app-id=$appId || { echo "Export from MongoDB Stitch failed"; exit 1; }
 
 # Step 3: enable custom user data
 cd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
@@ -76,7 +78,8 @@ change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_conf
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
-"$cli" import --strategy=merge --include-hosting --app-id="$appId" --yes
+"$cli" import --strategy=merge --app-id="$appId" --yes
+cd ../..
 npm start
 echo "DEV environment stopped, rolling back the configuration changes"
-git checkout -- $(cat ./local/.trace)
+./cleanup.sh

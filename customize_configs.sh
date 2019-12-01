@@ -31,7 +31,9 @@ function change_json_file() {
   local source_file="$2"
   local tmp_file="${source_file}.tmp"
   if jq "$expr" "$source_file" > "$tmp_file"; then
-    echo "$source_file" >> "$trace_log"
+    if ! fgrep "$source_file" "$trace_log" >/dev/null; then
+      echo "$source_file" >> "$trace_log"
+    fi
     mv "$source_file" "${source_file}.bak" && mv "$tmp_file" "$source_file"
   else
     exit 1
@@ -42,7 +44,9 @@ function change_text_file() {
   local regex="$1"
   local file="$2"
 
-  echo "$file" >> "$trace_log"
+  if ! fgrep "$file" "$trace_log" >/dev/null; then
+    echo "$file" >> "$trace_log"
+  fi
   if [[ "$OSTYPE" == "linux-gnu" ]]; then
     sed -i "$regex" "$file"
   elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -55,6 +59,7 @@ function change_text_file() {
 
 dbName="$(kv mongoDatabase)"
 appId="$(kv appId)"
+hostingEnabled="$(kv hostingEnabled)"
 customDomainEnabled="$(kv customDomainEnabled)"
 
 change_text_file "s/GITHUB_STITCH_APP_ID/$appId/" src/js/app.js
@@ -68,10 +73,13 @@ for file in $(find stitch/services/mongodb-atlas/rules -type f -name \*.json); d
   change_json_file '.database="'$dbName'"' "$file"
 done
 
-change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
-
-if [[ $customDomainEnabled == "true" ]]; then
-  change_json_file '.hosting.custom_domain="'$(kv customDomain)'"' ./stitch/stitch.json
+if [[ "$hostingEnabled" == "true" ]]; then
+  change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
+  if [[ $customDomainEnabled == "true" ]]; then
+    change_json_file '.hosting.custom_domain="'$(kv customDomain)'"' ./stitch/stitch.json
+  fi
+else
+  change_json_file '. |= del(.hosting)' ./stitch/stitch.json
 fi
 
 # Google OAuth secret name adjustment
