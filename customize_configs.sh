@@ -10,6 +10,10 @@ fi
 prefix="${branch^^}" # uppercase
 
 echo "Configs will be customized for the $branch branch"
+stitch_dir="${1?Specify temp directory for Stitch app files}"
+[[ -e "$stitch_dir" ]] && rm -fr "$stitch_dir" && mkdir "$stitch_dir"
+echo "MongoDB Stitch temp app directory: $stitch_dir"
+cp -av ./stitch/ "$stitch_dir" || { echo "Can't copy stitch app files to the $stitch_dir directory"; exit 1; }
 
 function kv() {
   local query=".$1"
@@ -64,25 +68,27 @@ customDomainEnabled="$(kv customDomainEnabled)"
 
 change_text_file "s/GITHUB_STITCH_APP_ID/$appId/" src/js/app.js
 
-for file in src/js/app.js $(find stitch/functions -type f -name source.js); do
+for file in src/js/app.js $(find "${stitch_dir}/functions" -type f -name source.js); do
   change_text_file "s/GITHUB_MONGO_DATABASE_NAME/$dbName/" "$file"
 done
 
 # MongoDB database / collection / rules fix
-for file in $(find stitch/services/mongodb-atlas/rules -type f -name \*.json); do
+for file in $(find "$stitch_dir/services/mongodb-atlas/rules" -type f -name \*.json); do
   change_json_file '.database="'$dbName'"' "$file"
 done
 
 if [[ "$hostingEnabled" == "true" ]]; then
-  change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' ./stitch/stitch.json
+  change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' "${stitch_dir}/stitch.json"
   if [[ $customDomainEnabled == "true" ]]; then
-    change_json_file '.hosting.custom_domain="'$(kv customDomain)'"' ./stitch/stitch.json
+    change_json_file '.hosting.custom_domain="'$(kv customDomain)'"' "${stitch_dir}/stitch.json"
   fi
 else
-  change_json_file '. |= del(.hosting)' ./stitch/stitch.json
+  change_json_file '. |= del(.hosting)' "${stitch_dir}/stitch.json"
 fi
 
-# Google OAuth secret name adjustment
-change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .config.clientId="'$(kv googleOauthStitchUsername)'" | .redirect_uris='$(kv OAuthRedirectURIs) stitch/auth_providers/oauth2-google.json
+# OAuth adjustments
+change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .config.clientId="'$(kv googleOauthStitchUsername)'" | .redirect_uris='$(kv OAuthRedirectURIs) "$stitch_dir/auth_providers/oauth2-google.json"
+change_json_file '.config.clientId="'$(kv appleClientId)'" | .redirect_uris='$(kv OAuthRedirectURIs) "$stitch_dir/auth_providers/oauth2-apple.json"
 
-echo "Config customization completed"
+echo "Config customization completed, temp Stitch app directory: $stitch_dir"
+exit 0
