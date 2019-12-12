@@ -19,7 +19,7 @@ jobs:
         UAT_ENV: ${{ secrets.UAT_ENV }}
       run: |
         npm install
-        ./customize_configs.sh
+        ./customize_configs.sh ./stitch-app.temp
         mkdir -p stitch/hosting/files
         npm run build-prod
         echo "<!-- $(date) -->" >> stitch/hosting/files/index.html
@@ -30,4 +30,4 @@ jobs:
         STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
         STITCH_USER: ${{ secrets.STITCH_USER }}
       run: |
-        ./deploy_app.sh
+        ./deploy_app.sh ./stitch-app.temp

@@ -31,6 +31,7 @@ appId="$(kv appId)"
 appName="$(kv appName)"
 dbName="$(kv mongoDatabase)"
 cli="$(pwd)/node_modules/.bin/stitch-cli"
+appDir="${1?Specify app directory}"
 
 echo "Getting MongoDB Stitch CLI"
 if [[ -f "$cli" ]]; then
@@ -44,7 +45,7 @@ echo "Logging in to MongoDB Stitch"
 "$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
 
 # Step 1: replace the existing app
-cd stitch && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
+cd "$appDir" && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
 
 # Step 2: export the app to get newly generated IDs for the services
 cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
