@@ -44,12 +44,6 @@ module.exports = {
     compress: true,
     contentBase: '/stitch/hosting/files/',
     disableHostCheck: true,
-    https: {
-      key: fs.readFileSync('local/key.pem'),
-      cert: fs.readFileSync('local/localhost.pem'),
-      ca: fs.readFileSync('local/ca.pem'),
-    },
-    port: 8443,
     watchOptions: {
       poll: true,
     },
@@ -226,3 +220,12 @@ module.exports = {
 
   ],
 };
+
+if (env == "development") {
+  module.exports.devServer.port = 8443;
+  module.exports.devServer.https = {
+      key: fs.readFileSync('local/key.pem'),
+      cert: fs.readFileSync('local/localhost.pem'),
+      ca: fs.readFileSync('local/ca.pem'),
+    };
+}
