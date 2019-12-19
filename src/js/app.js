@@ -71,11 +71,6 @@ var app = new Framework7({
       loggedInUser: loggedInUser,
       loggedInEmail: loggedInEmail,
       stitchUserId: stitchUserId,
-      // Test data
-      user: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
     };
   },
   // App root methods
