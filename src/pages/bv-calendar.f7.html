@@ -93,7 +93,7 @@
               });
 
               // Getting initial seed of calendar dots
-              app.data.stitchClient.callFunction('getBVCalendarDots', new Date()).then(dots => {
+              app.data.stitchClient.callFunction('getBVCalendarDots', [new Date()]).then(dots => {
                 c.params.events = dots;
                 console.log("Calendar dots were updated, "+ dots.length + " dots");
                 c.update();
