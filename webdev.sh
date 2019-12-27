@@ -95,6 +95,10 @@ echo "Merging the changes to the existing app"
 popd
 popd
 
+function trap_ctrlc() {
+  echo "DEV environment stopped, rolling back the configuration changes"
+  ./cleanup.sh "$stitch_temp_dir"
+}
+
+trap "trap_ctrlc" 2
 npm start
-echo "DEV environment stopped, rolling back the configuration changes"
-./cleanup.sh "$stitch_temp_dir"
