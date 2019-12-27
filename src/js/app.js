@@ -21,6 +21,10 @@ import {
 } from 'mongodb-stitch-browser-sdk'
 const APP_ID = 'GITHUB_STITCH_APP_ID';
 const MONGO_DATABASE = 'GITHUB_MONGO_DATABASE_NAME';
+
+import { DateTime } from "luxon";
+
+const tz = 'US/Pacific';
 const EV_PLACES  = 'ev_places';
 const EV_LOGBOOK = 'ev_logbook';
 

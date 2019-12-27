@@ -52,11 +52,110 @@
 </template>
 <script>
   export default {
-    data: function() {
-      var self = this;
-      // self.$app.data.db.collection('bv_log').
-      return {};
+    on: {
+      pageInit: function(e, page) {
+        var self = this;
+        var today = new Date();
+        var app = self.$app;
+        var $ = self.$;
 
+        var tz = app.params.tz;
+        const { DateTime } = require("luxon");
+        const dotsStartAt = DateTime.local().setZone(tz).minus({days: 40});
+        const dotsEndAt = DateTime.local().setZone(tz).plus({days: 40});
+
+        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        self.calendarInline = app.calendar.create({
+          containerEl: '#inline-bv-calendar',
+          value: [new Date()],
+          events: [],
+          renderToolbar: function() {
+            return '<div class="toolbar calendar-custom-toolbar no-shadow">' +
+              '<div class="toolbar-inner">' +
+              '<div class="left">' +
+              '<a href="#" class="link icon-only"><i class="icon icon-back"></i></a>' +
+              '</div>' +
+              '<div class="center"></div>' +
+              '<div class="right">' +
+              '<a href="#" class="link icon-only"><i class="icon icon-forward"></i></a>' +
+              '</div>' +
+              '</div>' +
+              '</div>';
+          },
+          on: {
+            init: function(c) {
+              $('.calendar-custom-toolbar .center').text(monthNames[c.currentMonth] + ', ' + c.currentYear);
+              $('.calendar-custom-toolbar .left .link').on('click', function() {
+                self.calendarInline.prevMonth();
+              });
+              $('.calendar-custom-toolbar .right .link').on('click', function() {
+                self.calendarInline.nextMonth();
+              });
+
+              const tz = app.data.tz;
+
+              // Getting initial seed of calendar dots
+              var dots_q = [
+                {"$match": {
+                  ts: {
+                    "$gte": dotsStartAt,
+                    "$lte": dotsEndAt,
+                  },
+                }},
+								{ "$group": {
+									_id: {
+										"date": {
+											"$dateFromParts" : {
+												"year": { "$year": {
+													"date": "$ts",
+													"timezone": tz,
+												} },
+												"month": { "$month": {
+													"date": "$ts",
+													"timezone": tz,
+												} },
+												"day": { "$dayOfMonth": {
+													"date": "$ts",
+													"timezone": tz,
+												} },
+												"hour": 0,
+												"minute": 0,
+												"second": 0,
+												"millisecond": 0,
+												"timezone": tz,
+											}
+										},
+										"child": "$child"
+									},
+									c: { "$sum": 1 }
+								}},
+								{ "$project": {
+									_id: 0,
+									"date": "$_id.date",
+									"color": { "$cond": {
+										if: { "$eq": [ "$_id.child", "Alyona" ] },
+										then: "#ff0000",
+										else: "#0000ff",
+									}}
+								}}
+              ];
+              console.log(dots_q);
+              app.data.db.collection('bv_log').aggregate(dots_q).toArray().then(dots => {
+                c.params.events = dots;
+                console.log("Calendar dots were updated, "+ dots.length + " dots");
+                c.update();
+							}).catch(e => {
+								console.error(e);
+							});
+              console.log("Calendar created");
+            },
+            monthYearChangeStart: function(c) {
+              $('.calendar-custom-toolbar .center').text(monthNames[c.currentMonth] + ', ' + c.currentYear);
+            }
+          }
+        });
+
+      },
     },
     methods: {
       SubmitBVEntry: function() {
