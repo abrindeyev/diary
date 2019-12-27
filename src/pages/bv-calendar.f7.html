@@ -92,55 +92,8 @@
                 self.calendarInline.nextMonth();
               });
 
-              const tz = app.data.tz;
-
               // Getting initial seed of calendar dots
-              var dots_q = [
-                {"$match": {
-                  ts: {
-                    "$gte": dotsStartAt,
-                    "$lte": dotsEndAt,
-                  },
-                }},
-								{ "$group": {
-									_id: {
-										"date": {
-											"$dateFromParts" : {
-												"year": { "$year": {
-													"date": "$ts",
-													"timezone": tz,
-												} },
-												"month": { "$month": {
-													"date": "$ts",
-													"timezone": tz,
-												} },
-												"day": { "$dayOfMonth": {
-													"date": "$ts",
-													"timezone": tz,
-												} },
-												"hour": 0,
-												"minute": 0,
-												"second": 0,
-												"millisecond": 0,
-												"timezone": tz,
-											}
-										},
-										"child": "$child"
-									},
-									c: { "$sum": 1 }
-								}},
-								{ "$project": {
-									_id: 0,
-									"date": "$_id.date",
-									"color": { "$cond": {
-										if: { "$eq": [ "$_id.child", "Alyona" ] },
-										then: "#ff0000",
-										else: "#0000ff",
-									}}
-								}}
-              ];
-              console.log(dots_q);
-              app.data.db.collection('bv_log').aggregate(dots_q).toArray().then(dots => {
+              app.data.stitchClient.callFunction('getBVCalendarDots', new Date()).then(dots => {
                 c.params.events = dots;
                 console.log("Calendar dots were updated, "+ dots.length + " dots");
                 c.update();
