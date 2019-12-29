@@ -13,7 +13,7 @@ echo "Configs will be customized for the $branch branch"
 stitch_dir="${1?Specify temp directory for Stitch app files}"
 [[ -e "$stitch_dir" ]] && rm -fr "$stitch_dir" && mkdir "$stitch_dir"
 echo "MongoDB Stitch temp app directory: $stitch_dir"
-cp -av ./stitch/ "$stitch_dir" || { echo "Can't copy stitch app files to the $stitch_dir directory"; exit 1; }
+cp -a ./stitch/ "$stitch_dir" || { echo "Can't copy stitch app files to the $stitch_dir directory"; exit 1; }
 
 function kv() {
   local query=".$1"

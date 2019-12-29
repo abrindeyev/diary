@@ -2,8 +2,11 @@
 
 myDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 certFile="$myDir/local/localhost.pem"
+stitchAppLastChangeFile="$myDir/local/stitchAppChange.timestamp"
 [[ -f "$certFile" ]] || { echo "Local development configuration is missing: $certFile isn't a file"; exit 1; }
 source "$myDir/local/env.sh"
+
+[[ -f "$stitchAppLastChangeFile" ]] || touch "$stitchAppLastChangeFile" || { echo "Can't touch $stitchAppLastChangeFile file"; exit 1; }
 
 if [[ -z $GITHUB_REF ]]; then
   branch="$(git rev-parse --abbrev-ref HEAD)"
@@ -55,45 +58,47 @@ function change_text_file() {
 appId="$(kv appId)"
 appName="$(kv appName)"
 dbName="$(kv mongoDatabase)"
-cli="$(pwd)/node_modules/.bin/stitch-cli"
+cli="$myDir/node_modules/.bin/stitch-cli"
 [[ -e "$cli" ]] || { echo "Can't fine stitch-cli. Have you run npm install already?"; exit 1; }
 
 stitch_temp_dir="$( mktemp -d stitch-app.XXXXXXXX )"
 
 echo "Starting DEV environment"
-git status
 
 echo "Customizing configs for local environment in the $stitch_temp_dir directory:"
 ./customize_configs.sh "$stitch_temp_dir"
 
-echo "Git repository state:"
-git status
+stitchAppNumberOfUpdatedFiles="$(find "$myDir/stitch" -type f -newer "$stitchAppLastChangeFile" | wc -l)"
+if [[ "$stitchAppNumberOfUpdatedFiles" -gt 0 ]]; then
 
-stitch-cli logout
-echo "Logging in to MongoDB Stitch"
-"$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
+  "$cli" logout
+  echo "Logging in to MongoDB Stitch"
+  "$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
 
-# Step 1: replace the existing app
-echo "Replacing the existing app in MongoDB Stitch:"
-pushd "$stitch_temp_dir" && "$cli" import --strategy=replace --app-id="$appId" --yes
+  # Step 1: replace the existing app
+  echo "Replacing the existing app in MongoDB Stitch:"
+  pushd "$stitch_temp_dir" && "$cli" import --strategy=replace --app-id="$appId" --yes
 
-# Step 2: export the app to get newly generated IDs for the services
-popd
-pushd ./local
-[[ -d "${appName?}" ]] && rm -fr "${appName?}"
-"$cli" export --app-id=$appId || { echo "Export from MongoDB Stitch failed"; exit 1; }
+  # Step 2: export the app to get newly generated IDs for the services
+  popd
+  pushd ./local
+  [[ -d "${appName?}" ]] && rm -fr "${appName?}"
+  "$cli" export --app-id=$appId || { echo "Export from MongoDB Stitch failed"; exit 1; }
 
-# Step 3: enable custom user data
-pushd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
-atlasClusterId="$(jq -r '.id' services/mongodb-atlas/config.json)"
-change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_config.mongo_service_id="'$atlasClusterId'" | .custom_user_data_config.database_name="'$dbName'" | .custom_user_data_config.collection_name="bv_users_metadata" | .custom_user_data_config.user_id_field="owner_id"' ./stitch.json
+  # Step 3: enable custom user data
+  pushd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
+  atlasClusterId="$(jq -r '.id' services/mongodb-atlas/config.json)"
+  change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_config.mongo_service_id="'$atlasClusterId'" | .custom_user_data_config.database_name="'$dbName'" | .custom_user_data_config.collection_name="bv_users_metadata" | .custom_user_data_config.user_id_field="owner_id"' ./stitch.json
 
-# Step 4: merge the deployment to the existing app
-echo "Merging the changes to the existing app"
-"$cli" import --strategy=merge --app-id="$appId" --yes
+  # Step 4: merge the deployment to the existing app
+  echo "Merging the changes to the existing app"
+  "$cli" import --strategy=merge --app-id="$appId" --yes
 
-popd
-popd
+  popd
+  popd
+else
+  echo "Not deploying the Stitch app - no new changes detected"
+fi
 
 function trap_ctrlc() {
   echo "DEV environment stopped, rolling back the configuration changes"
