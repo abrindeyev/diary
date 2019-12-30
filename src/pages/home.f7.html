@@ -153,20 +153,15 @@
           "Assign Roles",
           function acceptToken(token) {
             cl.callFunction('assignAppRoles', [token]).then(res => {
-              if (res) {
-                if ( res.status == true ) {
-                  app.dialog.alert(res.reason, "Roles assigned");
-                }
-                else {
-                  app.dialog.alert(res.reason, "Role assignment failed");
-                }
-              }
-              else {
-                app.dialog.alert("Ok", "Roles assigned", function () {
+              if ( res.status == true ) {
+                app.dialog.alert(res.roles.join(", "), "Roles assigned:", function () {
                   cl.auth.logout();
                   const credential = new GoogleRedirectCredential();
                   cl.auth.loginWithRedirect(credential);
                 });
+              }
+              else {
+                app.dialog.alert(res.reason, "Role assignment failed");
               }
             })
             .catch(err => {
