@@ -77,6 +77,8 @@ for file in $(find "$stitch_dir/services/mongodb-atlas/rules" -type f -name \*.j
   change_json_file '.database="'$dbName'"' "$file"
 done
 
+change_json_file '.value='$(kv token2roles) "$stitch_dir/values/token2roles.json"
+
 if [[ "$hostingEnabled" == "true" ]]; then
   change_json_file '.app_id="'$appId'" | .name="'$(kv appName)'" | .security.allowed_request_origins='$(kv allowedRequestOrigins)' | .hosting.app_default_domain="'$(kv appDefaultDomain)'"' "${stitch_dir}/stitch.json"
   if [[ $customDomainEnabled == "true" ]]; then

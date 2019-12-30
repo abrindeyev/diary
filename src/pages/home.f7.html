@@ -119,10 +119,20 @@
         </ul>
       </div>
       -->
+
+      <div class="block block-strong">
+        <div class="row">
+          <div class="col-25">
+            <a href="#" class="button button-raised button-fill" @click="assignAppRoles">Obtain Roles</a>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
 <script>
+  import { GoogleRedirectCredential } from 'mongodb-stitch-browser-sdk'
   export default {
     // Component Data
     data: function () {
@@ -134,11 +144,43 @@
     },
     // Component Methods
     methods: {
+      assignAppRoles: function () {
+        const self = this;
+        const app = self.$app;
+        const cl = app.data.stitchClient;
+        app.dialog.password(
+          "Enter a token:",
+          "Assign Roles",
+          function acceptToken(token) {
+            cl.callFunction('assignAppRoles', [token]).then(res => {
+              if (res) {
+                if ( res.status == true ) {
+                  app.dialog.alert(res.reason, "Roles assigned");
+                }
+                else {
+                  app.dialog.alert(res.reason, "Role assignment failed");
+                }
+              }
+              else {
+                app.dialog.alert("Ok", "Roles assigned", function () {
+                  cl.auth.logout();
+                  const credential = new GoogleRedirectCredential();
+                  cl.auth.loginWithRedirect(credential);
+                });
+              }
+            })
+            .catch(err => {
+              app.dialog.alert(err, "Failed to call assignAppRoles function");
+            });
+          },
+          function refuseToken(token) {
+            console.log("token cancelled");
+          });
+      },
       displayStitchUserId: function () {
         const self = this;
         const app = self.$app;
         const cl = app.data.stitchClient;
-        console.log(cl);
         app.dialog.alert(cl.auth.isLoggedIn ? cl.auth.user.id : "Not logged in" ,"Stitch User Id");
       },
       stitchLogout: function () {
