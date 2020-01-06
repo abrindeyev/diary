@@ -75,6 +75,17 @@ if [[ "$stitchAppNumberOfUpdatedFiles" -gt 0 ]]; then
   echo "Logging in to MongoDB Stitch"
   "$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
 
+  echo "Updating Stitch secrets"
+  googleSecretName="$(kv googleOauthStitchSecretName)"
+  googleSecretID="$("$cli" secrets list --app-id="$appId" | grep -E -v '^(ID|No secrets found for this app)' | grep "$googleSecretName"'$' | cut -f1 -d' ')"
+  if [[ "$googleSecretID" != "" ]]; then
+    echo "Updating the $googleSecretName secret using the ID=$googleSecretID"
+    "$cli" secrets update --app-id="$appId" --id="$googleSecretID" --value="$(kv googleOauthStitchSecretValue)"
+  else
+    echo "Creating a new $googleSecretName secret"
+    "$cli" secrets add --app-id="$appId" --name="$googleSecretName" --value="$(kv googleOauthStitchSecretValue)"
+  fi
+
   # Step 1: replace the existing app
   echo "Replacing the existing app in MongoDB Stitch:"
   pushd "$stitch_temp_dir" && "$cli" import --strategy=replace --app-id="$appId" --yes || { echo "Replace failed"; exit 1; }
