@@ -3,7 +3,6 @@
     "config_version": 20180301,
     "name": "",
     "location": "US-OR",
-    "deployment_model": "GLOBAL",
     "security": {},
     "hosting": {
         "enabled": true,
