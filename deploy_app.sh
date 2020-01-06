@@ -42,6 +42,13 @@ else
 fi
 
 echo "Logging in to MongoDB Stitch"
+if [[ "$prefix" == "MASTER" ]]; then
+  STITCH_API_KEY="${STITCH_API_KEY_PROD?Can not find prod Stitch token}"
+  STITCH_USER="${STITCH_USER_PROD?Can not find prod Stitch user}"
+else
+  STITCH_API_KEY="${STITCH_API_KEY_NONPROD?Can not find non-prod Stitch token}"
+  STITCH_USER="${STITCH_USER_NONPROD?Can not find non-prod Stitch user}"
+fi
 "$cli" login --api-key "$STITCH_API_KEY" --username "$STITCH_USER"
 
 # Step 1: replace the existing app

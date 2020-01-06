@@ -27,7 +27,9 @@ jobs:
       env:
         MASTER_ENV: ${{ secrets.MASTER_ENV }}
         UAT_ENV: ${{ secrets.UAT_ENV }}
-        STITCH_API_KEY: ${{ secrets.STITCH_API_KEY }}
-        STITCH_USER: ${{ secrets.STITCH_USER }}
+        STITCH_API_KEY_PROD: ${{ secrets.STITCH_API_KEY_PROD }}
+        STITCH_API_KEY_NONPROD: ${{ secrets.STITCH_API_KEY_NONPROD }}
+        STITCH_USER_PROD: ${{ secrets.STITCH_USER_PROD }}
+        STITCH_USER_NONPROD: ${{ secrets.STITCH_USER_NONPROD }}
       run: |
         ./deploy_app.sh ./stitch-app.temp
