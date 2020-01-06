@@ -77,7 +77,7 @@ if [[ "$stitchAppNumberOfUpdatedFiles" -gt 0 ]]; then
 
   # Step 1: replace the existing app
   echo "Replacing the existing app in MongoDB Stitch:"
-  pushd "$stitch_temp_dir" && "$cli" import --strategy=replace --app-id="$appId" --yes
+  pushd "$stitch_temp_dir" && "$cli" import --strategy=replace --app-id="$appId" --yes || { echo "Replace failed"; exit 1; }
 
   # Step 2: export the app to get newly generated IDs for the services
   popd
@@ -92,7 +92,7 @@ if [[ "$stitchAppNumberOfUpdatedFiles" -gt 0 ]]; then
 
   # Step 4: merge the deployment to the existing app
   echo "Merging the changes to the existing app"
-  "$cli" import --strategy=merge --app-id="$appId" --yes
+  "$cli" import --strategy=merge --app-id="$appId" --yes || { echo "Merge failed"; exit 1; }
 
   popd
   popd
