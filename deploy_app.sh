@@ -78,9 +78,7 @@ echo "Merging the changes to the existing app"
 "$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes || { echo "Merge failed"; exit 1; }
 
 # Step 5: dependencies generation and upload
-echo "Before deps generation: $(pwd)"
-pushd "functions" && npm install || { echo "NPM install failed"; exit 1; }
-echo "After deps deneration: $(pwd)"
+pushd "functions" && cp ../../stitch/functions/package.json . && npm install || { echo "NPM install failed"; exit 1; }
 [[ -d node_modules ]] || { echo "NPM failed to create a node_modules directory"; exit 1; }
 tar -czf ./node_modules.tar.gz node_modules/ || { echo "tar failed to compress the node_modules directory"; exit 1; }
 rm -fr ./node_modules ./package.json ./package-lock.json
