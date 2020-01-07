@@ -88,7 +88,7 @@ fi
 
 # OAuth adjustments
 change_json_file '.secret_config.clientSecret="'$(kv googleOauthStitchSecretName)'" | .config.clientId="'$(kv googleOauthStitchUsername)'" | .redirect_uris='$(kv OAuthRedirectURIs) "$stitch_dir/auth_providers/oauth2-google.json"
-change_json_file '.config.clientId="'$(kv appleClientId)'" | .redirect_uris='$(kv OAuthRedirectURIs) "$stitch_dir/auth_providers/oauth2-apple.json"
+# change_json_file '.config.clientId="'$(kv appleClientId)'" | .redirect_uris='$(kv OAuthRedirectURIs) "$stitch_dir/auth_providers/oauth2-apple.json"
 
 echo "Config customization completed, temp Stitch app directory: $stitch_dir"
 exit 0
