@@ -6,9 +6,11 @@
     "security": {},
     "hosting": {
         "enabled": true,
-        "custom_domain": "",
         "app_default_domain": "",
         "default_error_path": "",
         "default_error_code": "404"
+    },
+    "custom_user_data_config": {
+        "enabled": false
     }
 }

@@ -226,3 +226,12 @@ module.exports = {
 
   ],
 };
+
+if (env == "development") {
+  module.exports.devServer.port = 8443;
+  module.exports.devServer.https = {
+      key: fs.readFileSync('local/key.pem'),
+      cert: fs.readFileSync('local/localhost.pem'),
+      ca: fs.readFileSync('local/ca.pem'),
+    };
+}

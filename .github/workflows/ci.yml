@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches:
+    - master
+    - uat
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: build
+      env:
+        MASTER_ENV: ${{ secrets.MASTER_ENV }}
+        UAT_ENV: ${{ secrets.UAT_ENV }}
+      run: |
+        npm install
+        ./customize_configs.sh ./stitch-app.temp
+        mkdir -p ./stitch/hosting/files
+        npm run build-prod
+        echo "<\!-- $(date) -->" >> stitch/hosting/files/index.html
+        mkdir -p ./stitch-app.temp/hosting
+        cp -aR ./stitch/hosting/files ./stitch-app.temp/hosting
+    - name: Deploy
+      env:
+        MASTER_ENV: ${{ secrets.MASTER_ENV }}
+        UAT_ENV: ${{ secrets.UAT_ENV }}
+        STITCH_API_KEY_PROD: ${{ secrets.STITCH_API_KEY_PROD }}
+        STITCH_API_KEY_NONPROD: ${{ secrets.STITCH_API_KEY_NONPROD }}
+        STITCH_USER_PROD: ${{ secrets.STITCH_USER_PROD }}
+        STITCH_USER_NONPROD: ${{ secrets.STITCH_USER_NONPROD }}
+      run: |
+        ./deploy_app.sh ./stitch-app.temp
