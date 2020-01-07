@@ -63,7 +63,7 @@ else
 fi
 
 # Step 1: replace the existing app
-cd "$appDir" && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes
+cd "$appDir" && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
 
 # Step 2: export the app to get newly generated IDs for the services
 cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
@@ -75,6 +75,14 @@ change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_conf
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
-"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes
+"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes || { echo "Merge failed"; exit 1; }
+
+# Step 5: dependencies generation and upload
+pushd "functions" && npm install || { echo "NPM install failed"; exit 1; }
+[[ -d node_modules ]] || { echo "NPM failed to create a node_modules directory"; exit 1; }
+tar -czf ./node_modules.tar.gz node_modules/ || { echo "tar failed to compress the node_modules directory"; exit 1; }
+rm -fr ./node_modules ./package.json ./package-lock.json
+popd
+"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --include-dependencies # || { echo "Dependency upload failed"; exit 1; }
 
 echo "Deployment completed"
