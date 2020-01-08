@@ -35,7 +35,7 @@ function change_json_file() {
   local source_file="$2"
   local tmp_file="${source_file}.tmp"
   if jq "$expr" "$source_file" > "$tmp_file"; then
-    if ! fgrep "$source_file" "$trace_log" >/dev/null; then
+    if ! fgrep "$source_file" "$trace_log" 2>/dev/null >/dev/null; then
       echo "$source_file" >> "$trace_log"
     fi
     mv "$source_file" "${source_file}.bak" && mv "$tmp_file" "$source_file"
@@ -48,7 +48,7 @@ function change_text_file() {
   local regex="$1"
   local file="$2"
 
-  if ! fgrep "$file" "$trace_log" >/dev/null; then
+  if ! fgrep "$file" "$trace_log" 2>/dev/null >/dev/null; then
     echo "$file" >> "$trace_log"
   fi
   if [[ "$OSTYPE" == "linux-gnu" ]]; then
