@@ -22,7 +22,7 @@ jobs:
         ./customize_configs.sh ./stitch-app.temp
         mkdir -p ./stitch/hosting/files
         npm run build-prod
-        echo "<\!-- $(date) -->" >> stitch/hosting/files/index.html
+        echo "<!-- $(date) -->" >> stitch/hosting/files/index.html
         mkdir -p ./stitch-app.temp/hosting
         cp -aR ./stitch/hosting/files ./stitch-app.temp/hosting
     - name: Deploy
