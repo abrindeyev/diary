@@ -63,18 +63,26 @@ else
 fi
 
 # Step 1: replace the existing app
-cd "$appDir" && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
+cd "$appDir" && {
+  echo -n "STEP 1: App build to deploy: ";
+  tail -c38 hosting/files/index.html;
+  "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
+}
 
 # Step 2: export the app to get newly generated IDs for the services
 cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
 
 # Step 3: enable custom user data
 cd "$appName" || { echo "Can't change directory to $appName, it seems that export failed"; exit 1; }
+echo -n "STEP 3: App build after export: "
+tail -c38 hosting/files/index.html
 atlasClusterId="$(jq -r '.id' services/mongodb-atlas/config.json)"
 change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_config.mongo_service_id="'$atlasClusterId'" | .custom_user_data_config.database_name="'$dbName'" | .custom_user_data_config.collection_name="bv_users_metadata" | .custom_user_data_config.user_id_field="owner_id"' ./stitch.json
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
+echo -n "STEP 4: App build before merging: "
+tail -c38 hosting/files/index.html
 "$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --reset-cdn-cache || { echo "Merge failed"; exit 1; }
 
 # Step 5: dependencies generation and upload
@@ -83,6 +91,8 @@ pushd "functions" && cp ../../stitch/functions/package.json . && npm install || 
 tar -czf ./node_modules.tar.gz node_modules/ || { echo "tar failed to compress the node_modules directory"; exit 1; }
 rm -fr ./node_modules ./package.json ./package-lock.json
 popd
+echo -n "STEP 5: App build before merging: "
+tail -c38 hosting/files/index.html
 "$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --reset-cdn-cache --include-dependencies # || { echo "Dependency upload failed"; exit 1; }
 
 echo "Deployment completed"
