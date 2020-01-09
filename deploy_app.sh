@@ -75,7 +75,7 @@ change_json_file '.custom_user_data_config.enabled=true | .custom_user_data_conf
 
 # Step 4: merge the deployment to the existing app
 echo "Merging the changes to the existing app"
-"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes || { echo "Merge failed"; exit 1; }
+"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --reset-cdn-cache || { echo "Merge failed"; exit 1; }
 
 # Step 5: dependencies generation and upload
 pushd "functions" && cp ../../stitch/functions/package.json . && npm install || { echo "NPM install failed"; exit 1; }
@@ -83,6 +83,6 @@ pushd "functions" && cp ../../stitch/functions/package.json . && npm install || 
 tar -czf ./node_modules.tar.gz node_modules/ || { echo "tar failed to compress the node_modules directory"; exit 1; }
 rm -fr ./node_modules ./package.json ./package-lock.json
 popd
-"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --include-dependencies # || { echo "Dependency upload failed"; exit 1; }
+"$cli" import --strategy=merge --include-hosting --app-id="$STITCH_APP_ID" --yes --reset-cdn-cache --include-dependencies # || { echo "Dependency upload failed"; exit 1; }
 
 echo "Deployment completed"
