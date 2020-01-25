@@ -98,3 +98,30 @@ $$('#my-login-screen .login-button').on('click', function () {
   // Alert username and password
   app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
 });
+
+$$('#btnObtainRoles').on('click', function obtainRoles() {
+  const cl = app.data.stitchClient;
+  app.dialog.password(
+    "Enter a token:",
+    "Assign Roles",
+    function acceptToken(token) {
+      cl.callFunction('assignAppRoles', [token]).then(res => {
+        if ( res.status == true ) {
+          app.dialog.alert(res.roles.join(", "), "Roles assigned:", function () {
+            cl.auth.logout();
+            const credential = new GoogleRedirectCredential();
+            cl.auth.loginWithRedirect(credential);
+          });
+        }
+        else {
+          app.dialog.alert(res.reason, "Role assignment failed");
+        }
+      })
+      .catch(err => {
+        app.dialog.alert(err, "Failed to call assignAppRoles function");
+      });
+    },
+    function refuseToken(token) {
+      console.log("token cancelled");
+    });
+});
