@@ -63,7 +63,7 @@ else
 fi
 
 # Step 1: replace the existing app
-cd "$appDir" && "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
+cd "$appDir" && "$cli" import --strategy=replace-by-name --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
 
 # Step 2: export the app to get newly generated IDs for the services
 cd .. && "$cli" export --app-id=$appId --include-hosting || { echo "Export from MongoDB Stitch failed"; exit 1; }
