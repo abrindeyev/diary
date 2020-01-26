@@ -1,0 +1,9 @@
+{
+    "name": "pocketMoneyCronJob",
+    "type": "SCHEDULED",
+    "config": {
+        "schedule": "0 9 1 * *"
+    },
+    "function_name": "calculatePocketMoney",
+    "disabled": false
+}

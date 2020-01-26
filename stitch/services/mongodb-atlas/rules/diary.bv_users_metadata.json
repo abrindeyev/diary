@@ -1,29 +1,19 @@
 {
     "database": "",
-    "collection": "bv_log",
+    "collection": "bv_users_metadata",
     "roles": [
         {
-            "name": "parent",
+            "name": "owner",
             "apply_when": {
-                "%%user.custom_data.app_roles": "writer"
+                "owner_id": "%%user.id"
             },
             "read": true,
             "write": true,
             "insert": true,
             "delete": true,
             "additional_fields": {}
-        },
-        {
-            "name": "kid",
-            "apply_when": {},
-            "read": true,
-            "write": false,
-            "insert": false,
-            "delete": false,
-            "additional_fields": {}
         }
     ],
-    "filters": [],
     "schema": {
         "properties": {
             "_id": {

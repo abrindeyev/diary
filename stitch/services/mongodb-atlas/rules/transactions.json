@@ -1,0 +1,47 @@
+{
+    "database": "",
+    "collection": "transactions",
+    "roles": [
+        {
+            "name": "parent",
+            "apply_when": {
+                "%%user.custom_data.app_roles": "writer"
+            },
+            "read": true,
+            "write": true,
+            "insert": true,
+            "delete": true,
+            "additional_fields": {}
+        },
+        {
+            "name": "others",
+            "apply_when": {},
+            "read": true,
+            "write": false,
+            "insert": false,
+            "delete": false,
+            "additional_fields": {}
+        }
+    ],
+    "filters": [],
+    "schema": {
+        "properties": {
+            "_id": { "bsonType": "objectId" },
+            "description": { "bsonType": "string" },
+            "ts": { "bsonType": "date" },
+            "splits": {
+                "bsonType": "array",
+                "items": {
+                    "bsonType": "object",
+                    "properties": {
+                        "account": { "bsonType": "string" },
+                        "type": { "bsonType": "string" },
+                        "amount": { "bsonType": "decimal" }
+                    },
+                    "additionalProperties": false
+                },
+                "minItems": 2
+            }
+        }
+    }
+}

@@ -66,7 +66,7 @@ fi
 cd "$appDir" && {
   echo -n "STEP 1: App build to deploy: ";
   tail -c38 hosting/files/index.html;
-  "$cli" import --strategy=replace --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
+  "$cli" import --strategy=replace-by-name --include-hosting --reset-cdn-cache --app-id="$STITCH_APP_ID" --yes || { echo "Import failed"; exit 1; }
 }
 
 # Step 2: export the app to get newly generated IDs for the services

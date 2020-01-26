@@ -21,6 +21,10 @@ import {
 } from 'mongodb-stitch-browser-sdk'
 const APP_ID = 'GITHUB_STITCH_APP_ID';
 const MONGO_DATABASE = 'GITHUB_MONGO_DATABASE_NAME';
+
+import { DateTime } from "luxon";
+
+const tz = 'US/Pacific';
 const EV_PLACES  = 'ev_places';
 const EV_LOGBOOK = 'ev_logbook';
 
@@ -66,16 +70,12 @@ var app = new Framework7({
   data: function () {
     return {
       db: db,
+      tz: tz,
       Objectify: Objectify,
       stitchClient: stitchClient,
       loggedInUser: loggedInUser,
       loggedInEmail: loggedInEmail,
       stitchUserId: stitchUserId,
-      // Test data
-      user: {
-        firstName: 'John',
-        lastName: 'Doe',
-      },
     };
   },
   // App root methods
@@ -98,4 +98,31 @@ $$('#my-login-screen .login-button').on('click', function () {
 
   // Alert username and password
   app.dialog.alert('Username: ' + username + '<br>Password: ' + password);
+});
+
+$$('#btnObtainRoles').on('click', function obtainRoles() {
+  const cl = app.data.stitchClient;
+  app.dialog.password(
+    "Enter a token:",
+    "Assign Roles",
+    function acceptToken(token) {
+      cl.callFunction('assignAppRoles', [token]).then(res => {
+        if ( res.status == true ) {
+          app.dialog.alert(res.roles.join(", "), "Roles assigned:", function () {
+            cl.auth.logout();
+            const credential = new GoogleRedirectCredential();
+            cl.auth.loginWithRedirect(credential);
+          });
+        }
+        else {
+          app.dialog.alert(res.reason, "Role assignment failed");
+        }
+      })
+      .catch(err => {
+        app.dialog.alert(err, "Failed to call assignAppRoles function");
+      });
+    },
+    function refuseToken(token) {
+      console.log("token cancelled");
+    });
 });
