@@ -33,16 +33,32 @@
               </div>
             </label>
           </li>
-          <li>
-            <label class="item-radio item-content">
-              <input type="radio" name="kid" value="both"/>
-              <i class="icon icon-radio"></i>
-              <div class="item-inner">
-                <div class="item-title">Alyona &amp; Fyodor</div>
-              </div>
-            </label>
-          </li>
         </ul>
+      </div>
+      <div id="points-data-table" class="data-table card">
+        <div class="card-header">
+          <div class="data-table-title" {{#js_if "this.total > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}>{{kid}}'s total score: {{total}}</div>
+        </div>
+        <div class="card-content">
+          <table>
+            <thead>
+              <tr>
+                <th class="label-cell">Description</th>
+                <th class="numeric-cell">Points</th>
+                <th class="numeric-cell">Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each entries}}
+              <tr>
+                <td class="label-cell">{{escape comment}}</td>
+                <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{score}}</td>
+                <td class="numeric-cell">{{ts}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
       </div>
       <div class="block block-strong no-padding">
         <div id="inline-bv-calendar"></div>
@@ -52,20 +68,21 @@
 </template>
 <script>
   export default {
+    data: function defaultData() {
+      console.log("Returning default data");
+      return {
+        total: 0,
+        entries: []
+      }
+    },
     on: {
       pageInit: function(e, page) {
-        var self = this;
-        var today = new Date();
-        var app = self.$app;
-        var $ = self.$;
-
-        var tz = app.params.tz;
-        const { DateTime } = require("luxon");
-        const dotsStartAt = DateTime.local().setZone(tz).minus({days: 40});
-        const dotsEndAt = DateTime.local().setZone(tz).plus({days: 40});
+        var component = this;
+        var app = component.$app;
+        var $ = component.$;
 
         var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        self.calendarInline = app.calendar.create({
+        component.calendarInline = app.calendar.create({
           containerEl: '#inline-bv-calendar',
           value: [new Date()],
           events: [],
@@ -83,85 +100,87 @@
               '</div>';
           },
           on: {
-            init: function(c) {
-              $('.calendar-custom-toolbar .center').text(monthNames[c.currentMonth] + ', ' + c.currentYear);
+            init: function initBVCalendar(cal) {
+              $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
               $('.calendar-custom-toolbar .left .link').on('click', function() {
-                self.calendarInline.prevMonth();
+                component.calendarInline.prevMonth();
+                                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
+                                    cal.params.events = dots;
+                                    console.log("Calendar dots were updated, "+ dots.length + " dots");
+                                    cal.update();
+                                }).catch(e => {
+                                    console.error(e);
+                                });
               });
               $('.calendar-custom-toolbar .right .link').on('click', function() {
-                self.calendarInline.nextMonth();
+                component.calendarInline.nextMonth();
+                                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
+                                    cal.params.events = dots;
+                                    console.log("Calendar dots were updated, "+ dots.length + " dots");
+                                    cal.update();
+                                }).catch(e => {
+                                    console.error(e);
+                                });
               });
 
               // Getting initial seed of calendar dots
               app.data.stitchClient.callFunction('getBVCalendarDots', [new Date()]).then(dots => {
-                c.params.events = dots;
+                cal.params.events = dots;
                 console.log("Calendar dots were updated, "+ dots.length + " dots");
-                c.update();
-							}).catch(e => {
-								console.error(e);
-							});
+                cal.update();
+              }).catch(e => {
+                  console.error(e);
+              });
               console.log("Calendar created");
             },
-            monthYearChangeStart: function(c) {
-              $('.calendar-custom-toolbar .center').text(monthNames[c.currentMonth] + ', ' + c.currentYear);
-            }
+            monthYearChangeStart: function(cal) {
+              $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
+            },
+            dayClick: function calendarDaySelected(cal, dayEl, year, month, day) {
+              var kid = $('input[name="kid"]:checked')[0].value;
+
+              var tz = app.data.tz;
+              const { DateTime } = require("luxon");
+              const dayStartsAt = DateTime.fromObject({
+                year: year,
+                month: month + 1,
+                day: day,
+                hour: 0, minute: 0, second: 0,
+                zone: tz
+              }).toJSDate();
+              const dayEndsAt   = DateTime.fromObject({
+                year: year,
+                month: month + 1,
+                day: day,
+                hour: 23, minute: 59, second: 59,
+                zone: tz
+              }).toJSDate();
+
+              app.data.db.collection('bv_log').find(
+                {
+                  ts: {"$gte": dayStartsAt, "$lte": dayEndsAt},
+                  child: kid
+                },
+                {sort: {ts:-1} }
+              ).toArray().then(res => {
+                component.$setState(
+                  {
+                    entries: res.map(function(el) {
+                      el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ hour: '2-digit', minute: '2-digit', hour12: true });
+                      return el;
+                    }),
+                    kid: kid,
+                    total: res.reduce((a,b) => ({ score: a.score + b.score })).score
+                  },
+                  function componentUpdateCallback() {console.log("component has been updated")});
+              }).catch(e => {
+                  console.error(e);
+              });
+            },
           }
         });
-
       },
     },
-    methods: {
-      SubmitBVEntry: function() {
-        var self = this;
-        self.$app.preloader.show();
-        var $$ = self.$dom7;
-        var kid = $$('input[name="kid"]:checked')[0].value;
-        var points = $$('input[name="points"]:checked')[0].value;
-        var reason = $$('input[name="reason"]')[0].value;
-        if (reason === "") {
-          self.$app.preloader.hide();
-          self.$app.dialog.alert("The reason is a mandatory field");
-          return {};
-        }
-        var dt = new Date();
-        if (kid === "both") {
-          var entries = [
-             {
-               owner_id: self.$app.data.stitchUserId,
-               ts: dt,
-               score: Number(points),
-               child: "Alyona",
-               comment: reason
-             },
-             {
-               owner_id: self.$app.data.stitchUserId,
-               ts: dt,
-               score: Number(points),
-               child: "Fyodor",
-               comment: reason
-             }
-            ];
-        }
-        else {
-          var entries = [
-             {
-               owner_id: self.$app.data.stitchUserId,
-               ts: dt,
-               score: Number(points),
-               child: kid,
-               comment: reason
-             }
-            ];
-        }
-        self.$app.data.db.collection('bv_log').insertMany(entries).then(res => {
-        self.$app.preloader.hide();
-        self.$app.dialog.alert("Updated successfully");
-        $$('input[name="reason"]')[0].value = "";
-        }).catch(e => {
-          self.$app.preloader.hide();
-          self.$app.dialog.alert("Failed to update: "+e);
-        });
-      },
-    },
+    methods: {},
   }
 </script>

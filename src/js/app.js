@@ -70,6 +70,7 @@ var app = new Framework7({
   data: function () {
     return {
       db: db,
+      tz: tz,
       Objectify: Objectify,
       stitchClient: stitchClient,
       loggedInUser: loggedInUser,
