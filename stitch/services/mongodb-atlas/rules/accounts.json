@@ -1,6 +1,6 @@
 {
     "database": "",
-    "collection": "bv_log",
+    "collection": "accounts",
     "roles": [
         {
             "name": "parent",
@@ -14,7 +14,7 @@
             "additional_fields": {}
         },
         {
-            "name": "kid",
+            "name": "others",
             "apply_when": {},
             "read": true,
             "write": false,
@@ -26,11 +26,10 @@
     "filters": [],
     "schema": {
         "properties": {
-            "_id": {
-                "bsonType": "objectId"
-            },
-            "owner_id": {
-                "bsonType": "string"
+            "_id": { "bsonType": "string" },
+            "type": {
+                "bsonType": "string",
+                "enum": [ "asset", "expense", "income" ]
             }
         }
     }

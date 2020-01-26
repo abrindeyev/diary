@@ -25,7 +25,7 @@
     <div class="toolbar toolbar-bottom">
       <div class="toolbar-inner">
         <a href="#" class="link" @click="stitchLogout">Logout</a>
-  <a href="#" class="link">[{{loggedInEmail}}]</a>
+        <a href="#" class="link" @click="displayStitchUserId">[{{loggedInEmail}}]</a>
       </div>
     </div>
     <!-- Scrollable page content-->
@@ -48,6 +48,13 @@
             <a href="/bv-log-entry/" class="item-content item-link">
               <div class="item-inner">
                 <div class="item-title">BV Log Entry</div>
+              </div>
+            </a>
+          </li>
+          <li>
+            <a href="/bv-calendar/" class="item-content item-link">
+              <div class="item-inner">
+                <div class="item-title">BV Calendar</div>
               </div>
             </a>
           </li>
@@ -112,10 +119,12 @@
         </ul>
       </div>
       -->
+
     </div>
   </div>
 </template>
 <script>
+  import { GoogleRedirectCredential } from 'mongodb-stitch-browser-sdk'
   export default {
     // Component Data
     data: function () {
@@ -127,6 +136,12 @@
     },
     // Component Methods
     methods: {
+      displayStitchUserId: function () {
+        const self = this;
+        const app = self.$app;
+        const cl = app.data.stitchClient;
+        app.dialog.alert(cl.auth.isLoggedIn ? cl.auth.user.id : "Not logged in" ,"Stitch User Id");
+      },
       stitchLogout: function () {
         var self = this;
         self.$app.data.stitchClient.auth.logout();
