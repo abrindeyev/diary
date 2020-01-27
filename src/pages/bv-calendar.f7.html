@@ -14,7 +14,7 @@
     <div class="page-content">
       <div class="block-title">Choose kid</div>
       <div class="list">
-        <ul>
+        <ul @change="kidSelected">
           <li>
             <label class="item-radio item-content">
               <input type="radio" name="kid" value="Fyodor" checked="checked"/>
@@ -35,11 +35,14 @@
           </li>
         </ul>
       </div>
+      <div class="block block-strong no-padding">
+        <div id="inline-bv-calendar"></div>
+      </div>
       <div id="points-data-table" class="data-table card">
-        <div class="card-header">
-          <div class="data-table-title" {{#js_if "this.total > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}>{{kid}}'s total score: {{total}}</div>
+        <div class="card-header {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
+          <div class="data-table-title">{{kid}}'s total score: {{total}}</div>
         </div>
-        <div class="card-content">
+        <div class="card-content {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
           <table>
             <thead>
               <tr>
@@ -51,40 +54,86 @@
             <tbody>
               {{#each entries}}
               <tr>
-                <td class="label-cell">{{escape comment}}</td>
+                <td class="label-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{escape comment}}</td>
                 <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{score}}</td>
-                <td class="numeric-cell">{{ts}}</td>
+                <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{ts}}</td>
               </tr>
               {{/each}}
             </tbody>
           </table>
         </div>
       </div>
-      <div class="block block-strong no-padding">
-        <div id="inline-bv-calendar"></div>
-      </div>
     </div>
   </div>
 </template>
 <script>
+  import { DateTime } from "luxon"
+
+  var component = null;
+  var app;
+  var $;
+
+  function updateBVCalendarDots(year, month) {
+    app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(year, month)]).then(dots => {
+      component.calendarInline.params.events = dots;
+      component.calendarInline.update();
+      console.log("Calendar dots were updated, "+ dots.length + " dots");
+    }).catch(e => {
+        console.error(e);
+    });
+  }
+
+  function loadBVData(dt) {
+    console.log("loadBVData():");
+    console.log(component.calendarInline);
+    var kid = $('input[name="kid"]:checked')[0].value;
+
+    var tz = app.data.tz;
+
+    const dayStartsAt = DateTime.fromJSDate(dt,{zone:tz}).startOf('day').toJSDate();
+    const dayEndsAt   = DateTime.fromJSDate(dt,{zone:tz}).endOf('day').toJSDate();
+
+    app.data.db.collection('bv_log').find(
+      {
+        ts: {"$gte": dayStartsAt, "$lte": dayEndsAt},
+        child: kid
+      },
+      {sort: {ts:-1} }
+    ).toArray().then(res => {
+      component.$setState(
+        {
+          entries: res.map(function(el) {
+            el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ hour: '2-digit', minute: '2-digit', hour12: true });
+            return el;
+          }),
+          kid: kid,
+          total: res.length === 0 ? 0 : res.reduce((a,b) => ({ score: a.score + b.score })).score
+        },
+        function componentUpdateCallback() {console.log("component has been updated")});
+    }).catch(e => {
+        console.error(e);
+    });
+  }
   export default {
     data: function defaultData() {
       console.log("Returning default data");
       return {
         total: 0,
-        entries: []
+        entries: [],
       }
     },
     on: {
       pageInit: function(e, page) {
-        var component = this;
-        var app = component.$app;
-        var $ = component.$;
+        console.log("pageInit()");
+        component = this;
+        app = component.$app;
+        $ = component.$;
 
         var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+        var initialDate = DateTime.fromJSDate(new Date(),{zone:app.data.tz}).startOf('day').toJSDate();
         component.calendarInline = app.calendar.create({
           containerEl: '#inline-bv-calendar',
-          value: [new Date()],
+          value: [ initialDate ],
           events: [],
           renderToolbar: function() {
             return '<div class="toolbar calendar-custom-toolbar no-shadow">' +
@@ -104,83 +153,46 @@
               $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
               $('.calendar-custom-toolbar .left .link').on('click', function() {
                 component.calendarInline.prevMonth();
-                                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
-                                    cal.params.events = dots;
-                                    console.log("Calendar dots were updated, "+ dots.length + " dots");
-                                    cal.update();
-                                }).catch(e => {
-                                    console.error(e);
-                                });
+                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
+                    cal.params.events = dots;
+                    console.log("Calendar dots were updated, "+ dots.length + " dots");
+                    cal.update();
+                }).catch(e => {
+                    console.error(e);
+                });
               });
               $('.calendar-custom-toolbar .right .link').on('click', function() {
                 component.calendarInline.nextMonth();
-                                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
-                                    cal.params.events = dots;
-                                    console.log("Calendar dots were updated, "+ dots.length + " dots");
-                                    cal.update();
-                                }).catch(e => {
-                                    console.error(e);
-                                });
-              });
-
-              // Getting initial seed of calendar dots
-              app.data.stitchClient.callFunction('getBVCalendarDots', [new Date()]).then(dots => {
-                cal.params.events = dots;
-                console.log("Calendar dots were updated, "+ dots.length + " dots");
-                cal.update();
-              }).catch(e => {
-                  console.error(e);
               });
               console.log("Calendar created");
             },
             monthYearChangeStart: function(cal) {
               $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
+              updateBVCalendarDots(cal.currentYear, cal.currentMonth);
             },
-            dayClick: function calendarDaySelected(cal, dayEl, year, month, day) {
-              var kid = $('input[name="kid"]:checked')[0].value;
-
-              var tz = app.data.tz;
-              const { DateTime } = require("luxon");
-              const dayStartsAt = DateTime.fromObject({
+            dayClick: function(cal, dayEl, year, month, day) {
+              console.log("dayClick()");
+              loadBVData(DateTime.fromObject({
                 year: year,
                 month: month + 1,
                 day: day,
-                hour: 0, minute: 0, second: 0,
-                zone: tz
-              }).toJSDate();
-              const dayEndsAt   = DateTime.fromObject({
-                year: year,
-                month: month + 1,
-                day: day,
-                hour: 23, minute: 59, second: 59,
-                zone: tz
-              }).toJSDate();
-
-              app.data.db.collection('bv_log').find(
-                {
-                  ts: {"$gte": dayStartsAt, "$lte": dayEndsAt},
-                  child: kid
-                },
-                {sort: {ts:-1} }
-              ).toArray().then(res => {
-                component.$setState(
-                  {
-                    entries: res.map(function(el) {
-                      el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ hour: '2-digit', minute: '2-digit', hour12: true });
-                      return el;
-                    }),
-                    kid: kid,
-                    total: res.reduce((a,b) => ({ score: a.score + b.score })).score
-                  },
-                  function componentUpdateCallback() {console.log("component has been updated")});
-              }).catch(e => {
-                  console.error(e);
-              });
+                hour:0, minute: 0, second: 0,
+                zone: app.data.tz
+              }).toJSDate());
             },
           }
         });
+        console.log("initial data load");
+        updateBVCalendarDots(component.calendarInline.currentYear, component.calendarInline.currentMonth,);
+        loadBVData(initialDate);
       },
     },
-    methods: {},
+    methods: {
+      kidSelected: function() {
+        console.log("kidSelected()");
+        console.log(this);
+        loadBVData(component.calendarInline.getValue()[0])
+      }
+    },
   }
 </script>
