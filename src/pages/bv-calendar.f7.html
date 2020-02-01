@@ -8,59 +8,84 @@
             <span class="ios-only">Back</span>
           </a>
         </div>
-        <div class="title">Behavioral Calendar</div>
+        <div class="title">BV Calendar</div>
       </div>
     </div>
     <div class="page-content">
-      <div class="block-title">Choose kid</div>
-      <div class="list">
-        <ul @change="kidSelected">
-          <li>
-            <label class="item-radio item-content">
-              <input type="radio" name="kid" value="Fyodor" checked="checked"/>
-              <i class="icon icon-radio"></i>
-              <div class="item-inner">
-                <div class="item-title">Fyodor</div>
-              </div>
-            </label>
-          </li>
-          <li>
-            <label class="item-radio item-content">
-              <input type="radio" name="kid" value="Alyona"/>
-              <i class="icon icon-radio"></i>
-              <div class="item-inner">
-                <div class="item-title">Alyona</div>
-              </div>
-            </label>
-          </li>
-        </ul>
-      </div>
-      <div class="block block-strong no-padding">
-        <div id="inline-bv-calendar"></div>
-      </div>
-      <div id="points-data-table" class="data-table card">
-        <div class="card-header {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
-          <div class="data-table-title">{{kid}}'s total score: {{total}}</div>
+      <div class="row">
+        <div class="col text-align-center" style="">
+          <div class="block-title no-margin">
+            Child
+            <div class="list no-margin">
+              <ul @change="kidSelected">
+                <li>
+                  <label class="item-radio item-content">
+                    <input type="radio" name="kid" value="Fyodor" checked="checked"/>
+                    <i class="icon icon-radio"></i>
+                    <div class="item-inner">
+                      <div class="item-title">Fyodor</div>
+                    </div>
+                  </label>
+                </li>
+                <li>
+                  <label class="item-radio item-content">
+                    <input type="radio" name="kid" value="Alyona"/>
+                    <i class="icon icon-radio"></i>
+                    <div class="item-inner">
+                      <div class="item-title">Alyona</div>
+                    </div>
+                  </label>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
-        <div class="card-content {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
-          <table>
-            <thead>
-              <tr>
-                <th class="label-cell">Description</th>
-                <th class="numeric-cell">Points</th>
-                <th class="numeric-cell">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              {{#each entries}}
-              <tr>
-                <td class="label-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{escape comment}}</td>
-                <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{score}}</td>
-                <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{ts}}</td>
-              </tr>
-              {{/each}}
-            </tbody>
-          </table>
+        <div class="col text-align-center">
+          <div class="block-title no-margin">
+            Day
+            <div class="toolbar bvcal-day-buttons no-shadow">
+              <div class="toolbar-inner no-padding bg-color-white">
+                <div class="left">
+                  <a href="#" class="link icon-only"><i class="icon icon-back"></i></a>
+                </div>
+                <div class="center item-input-wrap">
+                  <input type="text" readonly="readonly" id="bv-calendar" style="width: 60px; text-align: center;"/>
+                </div>
+                <div class="right">
+                  <a href="#" class="link icon-only"><i class="icon icon-forward"></i></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+          <div id="points-data-table" class="data-table card">
+            <div class="card-header {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
+              <div class="data-table-title">{{kid}}'s total score: {{total}}</div>
+            </div>
+            <div class="card-content {{#js_if "this.total > 0"}}bg-color-green{{else}}{{#js_if "this.total < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="label-cell">Description</th>
+                    <th class="numeric-cell">Points</th>
+                    <th class="numeric-cell">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {{#each entries}}
+                  <tr>
+                    <td class="label-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{escape comment}}</td>
+                    <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{score}}</td>
+                    <td class="numeric-cell {{#js_if "this.score > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{ts}}</td>
+                  </tr>
+                  {{/each}}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -75,17 +100,14 @@
 
   function updateBVCalendarDots(year, month) {
     app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(year, month)]).then(dots => {
-      component.calendarInline.params.events = dots;
-      component.calendarInline.update();
-      console.log("Calendar dots were updated, "+ dots.length + " dots");
+      component.BVcalendar.params.events = dots;
+      component.BVcalendar.update();
     }).catch(e => {
         console.error(e);
     });
   }
 
   function loadBVData(dt) {
-    console.log("loadBVData():");
-    console.log(component.calendarInline);
     var kid = $('input[name="kid"]:checked')[0].value;
 
     var tz = app.data.tz;
@@ -109,14 +131,13 @@
           kid: kid,
           total: res.length === 0 ? 0 : res.reduce((a,b) => ({ score: a.score + b.score })).score
         },
-        function componentUpdateCallback() {console.log("component has been updated")});
+        function componentUpdateCallback() {});
     }).catch(e => {
         console.error(e);
     });
   }
   export default {
     data: function defaultData() {
-      console.log("Returning default data");
       return {
         total: 0,
         entries: [],
@@ -124,54 +145,38 @@
     },
     on: {
       pageInit: function(e, page) {
-        console.log("pageInit()");
         component = this;
         app = component.$app;
         $ = component.$;
 
-        var monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
         var initialDate = DateTime.fromJSDate(new Date(),{zone:app.data.tz}).startOf('day').toJSDate();
-        component.calendarInline = app.calendar.create({
-          containerEl: '#inline-bv-calendar',
+        component.BVcalendar = app.calendar.create({
+          inputEl: '#bv-calendar', openIn: "popover",
+          dateFormat: { month: 'short', day: '2-digit' },
           value: [ initialDate ],
           events: [],
-          renderToolbar: function() {
-            return '<div class="toolbar calendar-custom-toolbar no-shadow">' +
-              '<div class="toolbar-inner">' +
-              '<div class="left">' +
-              '<a href="#" class="link icon-only"><i class="icon icon-back"></i></a>' +
-              '</div>' +
-              '<div class="center"></div>' +
-              '<div class="right">' +
-              '<a href="#" class="link icon-only"><i class="icon icon-forward"></i></a>' +
-              '</div>' +
-              '</div>' +
-              '</div>';
-          },
           on: {
             init: function initBVCalendar(cal) {
-              $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
-              $('.calendar-custom-toolbar .left .link').on('click', function() {
-                component.calendarInline.prevMonth();
-                app.data.stitchClient.callFunction('getBVCalendarDots', [new Date(cal.currentYear, cal.currentMonth)]).then(dots => {
-                    cal.params.events = dots;
-                    console.log("Calendar dots were updated, "+ dots.length + " dots");
-                    cal.update();
-                }).catch(e => {
-                    console.error(e);
-                });
+              $('.bvcal-day-buttons .left .link').on('click', function() {
+                var newDay = DateTime.fromJSDate(component.BVcalendar.getValue()[0],{zone:app.data.tz}).minus({days:1}).toJSDate();
+                component.BVcalendar.setValue([newDay]);
+                loadBVData(newDay);
+              }); 
+              $('.bvcal-day-buttons .right .link').on('click', function() {
+                var newDay = DateTime.fromJSDate(component.BVcalendar.getValue()[0],{zone:app.data.tz}).plus({days:1}).toJSDate();
+                component.BVcalendar.setValue([newDay]);
+                loadBVData(newDay);
               });
-              $('.calendar-custom-toolbar .right .link').on('click', function() {
-                component.calendarInline.nextMonth();
-              });
-              console.log("Calendar created");
+            },
+            open: function BVcalOpen(cal) {
+                updateBVCalendarDots(cal.currentYear, cal.currentMonth);
             },
             monthYearChangeStart: function(cal) {
-              $('.calendar-custom-toolbar .center').text(monthNames[cal.currentMonth] + ', ' + cal.currentYear);
-              updateBVCalendarDots(cal.currentYear, cal.currentMonth);
+              if (cal.open) {
+                updateBVCalendarDots(cal.currentYear, cal.currentMonth);
+              }
             },
             dayClick: function(cal, dayEl, year, month, day) {
-              console.log("dayClick()");
               loadBVData(DateTime.fromObject({
                 year: year,
                 month: month + 1,
@@ -179,19 +184,17 @@
                 hour:0, minute: 0, second: 0,
                 zone: app.data.tz
               }).toJSDate());
+              cal.close();
             },
           }
         });
-        console.log("initial data load");
-        updateBVCalendarDots(component.calendarInline.currentYear, component.calendarInline.currentMonth,);
+        // updateBVCalendarDots(component.BVcalendar.currentYear, component.BVcalendar.currentMonth,);
         loadBVData(initialDate);
       },
     },
     methods: {
       kidSelected: function() {
-        console.log("kidSelected()");
-        console.log(this);
-        loadBVData(component.calendarInline.getValue()[0])
+        loadBVData(component.BVcalendar.getValue()[0])
       }
     },
   }
