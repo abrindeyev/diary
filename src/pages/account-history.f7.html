@@ -1,0 +1,183 @@
+<template>
+  <div class="page">
+    <div class="navbar">
+      <div class="navbar-bg"></div>
+      <div class="navbar-inner sliding">
+        <div class="left">
+          <a href="#" class="link back">
+            <i class="icon icon-back"></i>
+            <span class="if-not-md">Back</span>
+          </a>
+        </div>
+        <div class="title">Account Info</div>
+      </div>
+    </div>
+    <div class="page-content">
+      <div class="list">
+        <ul>
+          <li class="item-content item-input">
+            <div class="item-inner">
+              <div class="item-title item-label">Account</div>
+              <div class="item-input-wrap input-dropdown-wrap">
+                <select id="account-selector" @change="accountSelected" placeholder="Choose account...">
+                  {{#each accounts}}
+                  <option value="{{_id}}">{{_id}} [{{type}}]</option>
+                  {{/each}}
+                </select>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+      <div id="points-data-table" class="data-table card">
+        <div class="card-header {{#js_if "this.total_balance > 0"}}bg-color-green{{else}}{{#js_if "this.total_balance < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
+          <div class="data-table-title">Balance: ${{total_balance}}</div>
+        </div>
+        <div class="card-content {{#js_if "this.total_balance > 0"}}bg-color-green{{else}}{{#js_if "this.total_balance < 0"}}bg-color-red{{/js_if}}{{/js_if}}">
+          <table>
+            <thead>
+              <tr>
+                <th class="numeric-cell">Date</th>
+                <th class="numeric-cell">Amount</th>
+                <th class="label-cell">Description</th>
+              </tr>
+            </thead>
+            <tbody>
+              {{#each entries}}
+              <tr>
+                <td class="numeric-cell {{#js_if "this.amount > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{ts}}</td>
+                <td class="numeric-cell {{#js_if "this.amount > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">${{amount}}</td>
+                <td class="label-cell {{#js_if "this.amount > 0"}}bg-color-green{{else}}bg-color-red{{/js_if}}">{{escape description}}</td>
+              </tr>
+              {{/each}}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<script>
+  import { DateTime } from "luxon"
+
+  var component = null;
+  var app;
+  var $;
+  var lastTransactionsLimit = 10;
+
+  function loadAccountData(acc) {
+    var tz = app.data.tz;
+
+    var fetchTotalBalance = app.data.db.collection('transactions').aggregate([
+      { '$match': { 'splits.account': acc }},
+      { '$unwind': '$splits'},
+      { '$project': {
+        _id: 0,
+        account: '$splits.account',
+        amount: '$splits.amount',
+        type: '$splits.type'
+      }},
+      { '$match': { 'account': acc }},
+      { '$group': {
+        _id: '$account',
+        total: {
+          '$sum': {
+            '$cond': [
+              {
+                '$in': [
+                  '$type',
+                  [ 'asset', 'expense' ]
+                ]
+              },
+              '$amount',
+              { '$multiply': [ -1, '$amount' ] }
+            ]
+          }
+        }
+      }}
+    ]).toArray();
+
+    var fetchLastTransactions = app.data.db.collection('transactions').aggregate([
+      { '$match': { 'splits.account': acc }},
+      { '$sort': { ts: -1 }},
+      { '$limit': lastTransactionsLimit },
+      { '$unwind': '$splits'},
+      { '$project': {
+        _id: 1,
+        ts: 1,
+        description: 1,
+        account: '$splits.account',
+        amount: {
+          '$cond': [
+            {
+              '$in': [
+                '$splits.type',
+                [ 'asset', 'expense' ]
+              ]
+            },
+            '$splits.amount',
+            { '$multiply': [ -1, '$splits.amount' ] }
+          ]
+        },
+        type: '$splits.type'
+      }},
+      { '$match': { 'account': acc }},
+    ]).toArray();
+    
+    Promise.all([fetchTotalBalance, fetchLastTransactions]).then(outcome => {
+      if (outcome[0][0]) {
+        var totalBalance = outcome[0][0]['total'];
+        var lastTransactions = outcome[1];
+
+        component.$setState(
+          {
+            entries: lastTransactions.map(function(el) {
+              el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ month: 'short', day: '2-digit' });
+              return el;
+            }),
+            total_balance: totalBalance,
+          },
+          function componentUpdateCallback() {});
+      }
+      else {
+        component.$setState(
+          {
+            entries: [],
+            total_balance: 0,
+          },
+          function componentUpdateCallback() {});
+      }
+    }).catch(e => {
+        console.error(e);
+    });
+  }
+  export default {
+    data: function defaultData() {
+      component = this;
+      app = component.$app;
+      $ = component.$;
+
+      var accounts;
+      return app.data.db.collection('accounts').find({},{sort: {type:1,_id:1}}).toArray().then(res => {
+        accounts = res;
+        return {
+          total_balance: 0.00,
+          entries: [],
+          accounts: res,
+        }
+      }).catch(e => {
+          console.error(e);
+      });
+    },
+    on: {
+      pageInit: function(e, page) {
+        loadAccountData($('#account-selector')[0].value);
+      },
+    },
+    methods: {
+      accountSelected: function(el) {
+        loadAccountData(el.target.value);
+      },
+    },
+  }
+</script>
