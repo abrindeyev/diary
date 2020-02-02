@@ -13,6 +13,8 @@ import EVLogbookEntry from '../pages/ev-logbook-entry.f7.html';
 import BVLogEntry from '../pages/bv-log-entry.f7.html';
 import BVCalendar from '../pages/bv-calendar.f7.html';
 
+import AccountHistory from '../pages/account-history.f7.html';
+
 var routes = [
   {
     path: '/',
@@ -25,6 +27,10 @@ var routes = [
   {
     path: '/form/',
     component: FormPage,
+  },
+  {
+    path: '/account-history/',
+    component: AccountHistory,
   },
   {
     path: '/bv-log-entry/',
