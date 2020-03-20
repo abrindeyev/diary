@@ -1,11 +1,11 @@
 {
     "database": "",
-    "collection": "bv_users_metadata",
+    "collection": "users_metadata",
     "roles": [
         {
             "name": "owner",
             "apply_when": {
-                "owner_id": "%%user.id"
+                "_id": "%%user.id"
             },
             "read": true,
             "write": true,
@@ -17,9 +17,6 @@
     "schema": {
         "properties": {
             "_id": {
-                "bsonType": "objectId"
-            },
-            "owner_id": {
                 "bsonType": "string"
             }
         }
