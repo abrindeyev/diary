@@ -132,7 +132,7 @@
         component.$setState(
           {
             entries: lastTransactions.map(function(el) {
-              console.log(`date before: ${el.ts}`);
+              console.log(`date before: ${el.ts}, type: ${ typeof el.ts }`);
               var z = DateTime.fromJSDate(el.ts,{zone:tz});
               console.log(`z: ${z}, tz: ${tz}`);
               el.ts = z.toLocaleString({ month: 'short', day: '2-digit' });
