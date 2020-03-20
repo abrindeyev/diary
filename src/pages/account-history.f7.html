@@ -132,7 +132,9 @@
         component.$setState(
           {
             entries: lastTransactions.map(function(el) {
+              console.log(`date before: ${el.ts}`);
               el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ month: 'short', day: '2-digit' });
+              console.log(`date after : ${el.ts}`);
               return el;
             }),
             total_balance: totalBalance,
