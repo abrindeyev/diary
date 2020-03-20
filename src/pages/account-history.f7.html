@@ -133,7 +133,9 @@
           {
             entries: lastTransactions.map(function(el) {
               console.log(`date before: ${el.ts}`);
-              el.ts = DateTime.fromJSDate(el.ts,{zone:tz}).toLocaleString({ month: 'short', day: '2-digit' });
+              var z = DateTime.fromJSDate(el.ts,{zone:tz});
+              console.log(`z: ${z}, tz: ${tz}`);
+              el.ts = z.toLocaleString({ month: 'short', day: '2-digit' });
               console.log(`date after : ${el.ts}`);
               return el;
             }),
