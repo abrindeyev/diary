@@ -5,16 +5,15 @@ exports = function(token){
     var collection = context.services.get("mongodb-atlas").db("GITHUB_MONGO_DATABASE_NAME").collection("users_metadata");
     return collection.updateOne(
       {
-        _id: context.user.id
+        _id: context.user.id,
+        email: context.user.data.email
       },
       {
         "$addToSet": {
           app_roles: { "$each": t2r[token] }
         },
         "$set": {
-          last_updated:       new Date(),
-          auth_provider_type: context.user.identities[0].provider_type,
-          auth_provider_id:   context.user.identities[0].id
+          last_updated:       new Date()
         }
       },
       {

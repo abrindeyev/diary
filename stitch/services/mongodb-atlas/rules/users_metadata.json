@@ -5,7 +5,7 @@
         {
             "name": "owner",
             "apply_when": {
-                "_id": "%%user.id"
+                "email": "%%user.data.email"
             },
             "read": true,
             "write": true,

@@ -49,6 +49,29 @@ else {
   if (stitchClient.auth.hasRedirectResult()) {
     stitchClient.auth.handleRedirectResult().then(user => {
       console.log("Authenticated via Google OAuth: ", user);
+      loggedInEmail = stitchClient.auth.user.profile.email;
+      loggedInUser = stitchClient.auth.user.profile.firstName;
+      stitchUserId = stitchClient.auth.user.id;
+      if (stitchClient.auth.user.customData.app_roles) {
+        console.log(`App roles: ${stitchClient.auth.user.customData.app_roles}`);
+      }
+      else {
+        stitchClient.callFunction('restoreRoles', []).then(res => {
+          if ( res.status == true ) {
+            app.dialog.alert(res.roles.join(", "), "Roles restored:", function () {
+              stitchClient.auth.logout();
+              const credential = new GoogleRedirectCredential();
+              stitchClient.auth.loginWithRedirect(credential);
+            });
+          }
+          else {
+            app.dialog.alert(res.reason, "Role restoration failed");
+          }
+        })
+        .catch(err => {
+          app.dialog.alert(err, "Failed to call restoreRoles function");
+        });
+      }
     }).catch(err => {
       console.error("Failed to authenticate:");
       console.error(err);
