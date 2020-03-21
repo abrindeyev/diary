@@ -115,6 +115,7 @@ if [[ "$stitchAppNumberOfUpdatedFiles" -gt 0 ]]; then
 
   popd
   popd
+  touch "$stitchAppLastChangeFile"
 else
   echo "Not deploying the Stitch app - no new changes detected"
 fi
